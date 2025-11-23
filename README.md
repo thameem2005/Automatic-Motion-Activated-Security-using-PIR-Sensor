@@ -18,6 +18,8 @@
 PIR sensors are widely used in motion detection systems, security alarms, automatic lighting systems, and smart surveillance. They are popular due to their low power consumption, affordability, and ease of integration with microcontrollers such as the Arduino Uno. The sensor typically has three pins: VCC (power), GND (ground), and OUT (signal). When idle, the output pin remains LOW. Once motion is detected, the sensor sends a HIGH signal to the microcontroller, which can be used to trigger a response such as turning on an LED or activating an alarm.
 In this experiment, the PIR sensor is connected to an Arduino Uno board. The VCC pin of the sensor is connected to the 5V supply of the Arduino to power the sensor. The GND pin is connected to the Arduino’s ground. The OUT pin is connected to a digital input pin (pin 2 in this case) of the Arduino. The Arduino continuously monitors the state of the signal pin. If the signal pin goes HIGH, it means the sensor has detected motion, and the Arduino is programmed to turn ON the built-in LED on pin 13. If no motion is detected, the signal remains LOW, and the LED is turned OFF.
 Circuit Diagram:
+<img width="1060" height="576" alt="image" src="https://github.com/user-attachments/assets/22bbabd5-c3c0-469c-93d3-c658615f07d5" />
+
  
 ## Procedure: //Modify based on your circuit
 
@@ -60,14 +62,69 @@ Step 7: Save Your Work
 
 
 # Code:
+```
+// Add libraries
+#include "Servo.h"
 
+// Create a servo object
+Servo servo;
+
+const int pirPin = 12; // PIR sensor digital pin
+const int ledPin = 10; // LED digital pin
+const int servoPin = 3; // The pin the servo is connected to
+
+int pirState = LOW; // Initial state of PIR sensor
+int prevPirState = LOW; // Previous state of PIR sensor
+int servoPos = 0; // Set the servo at position 0
+
+void setup() {
+  Serial.begin(9600); // Initialize serial communication
+  pinMode(pirPin, INPUT); // Set PIR sensor pin as input
+  pinMode(ledPin, OUTPUT); // Set LED pin as output
+  servo.attach(servoPin); // Connect the servo to the servo pin
+  servo.write(servoPos); // Initialize the servo at 0 position
+  delay(1000); // Time for the PIR sensor to recalibrate
+}
+
+void loop() {
+  pirState = digitalRead(pirPin); // Read PIR sensor state
+
+  // Motion detected (rising edge)
+  if (pirState == HIGH && prevPirState == LOW) { 
+    Serial.println("Motion Detected.");
+    digitalWrite(ledPin, HIGH); // Turn on LED
+    prevPirState = HIGH;
+    
+    // Move the servo to 180 degrees
+    for(servoPos = 0; servoPos <= 180; servoPos++){
+      servo.write(servoPos);
+      delay(7);
+    }
+
+    // Move the servo back to 0 degrees
+    for(servoPos = 180; servoPos >= 0; servoPos--){
+      servo.write(servoPos);
+      delay(7);
+    }
+  } else if (pirState == LOW && prevPirState == HIGH) { 
+    // Motion ended (falling edge)
+    Serial.println("Motion Ended.");
+    digitalWrite(ledPin, LOW); // Turn off LED
+    prevPirState = LOW;
+    servo.write(servoPos); // Move the servo back to 0
+  }
+}
+```
 
 
 # Output:
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/0a8b695a-02f2-4585-93f3-881129a706c8" />
+
 
 
 
 
 # Result:
+The PIR sensor successfully detected motion and triggered the Arduino to turn ON the built-in LED. The LED remained OFF when no motion was present, confirming correct circuit and code functionality.
 The PIR sensor successfully detected motion and triggered the Arduino to turn ON the built-in LED. The LED remained OFF when no motion was present, confirming correct circuit and code functionality.
 
